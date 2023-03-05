@@ -19,12 +19,7 @@ from .utilities import (
 )
 
 
-def generate_scatter(
-    moop,
-    db,
-    points,
-):
-
+def generate_scatter(moop, db, points):
     """ Generate a scatterplot or scatterplot matrix.
 
         Args:
@@ -54,11 +49,11 @@ def generate_scatter(
     objectives = moop.getObjectiveType().names
 
     # * choose database
-    database = set_database(moop, db=db, points=points)
-    plot_name = set_plot_name(db=db)
+    database = set_database(moop, db, points)
+    plot_name = set_plot_name(db)
 
     # * create plot
-    if (len(objectives) == 2):
+    if len(objectives) == 2:
         fig = px.scatter(
             database,
             x=objectives[0],
@@ -67,8 +62,6 @@ def generate_scatter(
             hover_data=database.columns,
             template='none',
         )
-        # fig.update_xaxes(showticklabels=False)
-        # fig.update_yaxes(showticklabels=False)
     else:
         fig = px.scatter_matrix(
             database,
@@ -86,12 +79,7 @@ def generate_scatter(
     return fig
 
 
-def generate_parallel(
-    moop,
-    db,
-    points,
-):
-
+def generate_parallel(moop, db, points):
     """ Generate a parallel coordinates plot.
 
         Args:
@@ -116,7 +104,7 @@ def generate_parallel(
     """
 
     # * intro log
-    message = 'generating parallel coordinates plot. '
+    message = 'generating parallel coordinates plot... '
     message += 'this might take a while'
     logging.info(message)
 
@@ -142,12 +130,7 @@ def generate_parallel(
     return fig
 
 
-def generate_radar(
-    moop,
-    db,
-    points,
-):
-
+def generate_radar(moop, db, points):
     """ Generate a radar plot.
 
         Args:
@@ -182,8 +165,8 @@ def generate_radar(
     axes = tuple(temp_variable)
 
     # * choose database
-    database = set_database(moop, db=db, points=points)
-    plot_name = set_plot_name(db=db)
+    database = set_database(moop, db, points)
+    plot_name = set_plot_name(db)
 
     # * create scaled database
     j = database.copy(deep=True)
@@ -194,8 +177,8 @@ def generate_radar(
     # * create plot
     fig = go.Figure()
     for i in range(len(database)):
-        trace = (i)
-        hover_info = set_hover_info(database=database, i=i,)
+        trace = i
+        hover_info = set_hover_info(database, i)
         values = []
         for key in axes:
             values.append(scaled_db[key][i])
@@ -203,24 +186,19 @@ def generate_radar(
             r=values,
             theta=axes,
             name=trace,
-            hovertext=hover_info,))
+            hovertext=hover_info
+        ))
 
     # * improve aesthetics
-    fig.update_layout(
-        template='none',
-    )
+    fig.update_layout(template='none')
     fig.update_layout(
         polar=dict(
             radialaxis=dict(
                 visible=True,
-                showticklabels=False,)))
-    fig.update_layout(
-        title=dict(
-            text=plot_name))
-    fig.update_layout(
-        autosize=True,)
-    fig.update_layout(
-        showlegend=False)
+                showticklabels=False)))
+    fig.update_layout(title=dict(text=plot_name))
+    fig.update_layout(autosize=True)
+    fig.update_layout(showlegend=False)
 
     # * logging outro
     logging.info('generated radar plot')

@@ -1,5 +1,5 @@
 """ This module contains private methods for hosting and receiving callbacks
-from an interactiv dashboard. This module is intended only for developer use.
+from an interactive dashboard. This module is intended only for developer use.
 
 Note that some docstrings may be incomplete.
 
@@ -29,6 +29,11 @@ from .graph import (
 from .utilities import (
     set_plot_name,
     set_database,
+    validate_input,
+)
+from .statics import (
+    valid_plot_type_input,
+    default_plot_names
 )
 
 
@@ -36,22 +41,22 @@ class Dash_App:
     """ A class for hosting the dashboard app. """
 
     def __init__(
-        self,
-        moop,
-        plot_type,
-        db,
-        points,
-        height,
-        width,
-        font,
-        fontsize,
-        background_color,
-        screenshot,
-        image_export_format,
-        data_export_format,
-        dev_mode,
-        pop_up,
-        port,
+            self,
+            moop,
+            plot_type,
+            db,
+            points,
+            height,
+            width,
+            font,
+            fontsize,
+            background_color,
+            screenshot,
+            image_export_format,
+            data_export_format,
+            dev_mode,
+            pop_up,
+            port,
     ):
         """ Constructor for dashboard app. """
 
@@ -84,12 +89,14 @@ class Dash_App:
         self.graph = self.generate_graph()
         self.config = self.configure()
 
-    # ! LAYOUT
+        # ! LAYOUT
 
         # * initialize app
         app = Dash(__name__)
+
         # * lay out app
         app.layout = html.Div(children=[
+
             dcc.Dropdown(
                 id='plot_type_dropdown',
                 options=['Scatterplot',
@@ -97,6 +104,7 @@ class Dash_App:
                          'Radar plot'],
                 placeholder='Change plot type',
             ),
+
             dcc.Dropdown(
                 id='database_dropdown',
                 options=[
@@ -105,27 +113,34 @@ class Dash_App:
                 ],
                 placeholder='Change dataset',
             ),
+
             html.Button(
                 children='Export all data',
                 id='download_dataset_button',
             ),
+
             dcc.Download(
                 id='download_dataset_dcc',
             ),
+
             html.Button(
                 children='Export selected data',
                 id='download_selection_button',
             ),
+
             dcc.Download(
                 id='download_selection_dcc',
             ),
+
             html.Button(
                 children='Export image to working directory',
                 id='download_image_button',
             ),
+
             dcc.Store(
                 id='image'
             ),
+
             dcc.Checklist(
                 id='constraint_checkboxes',
                 options=[
@@ -137,35 +152,45 @@ class Dash_App:
                 value=['constraint_satisfying'],
                 inline=True,
             ),
+
             html.Br(),
+
             # * main plot
+
             dcc.Graph(
                 id='parmoo_graph',
                 figure=self.graph,
                 config=self.config,
             ),
+
             html.Br(),
+
             html.Button(
                 children='Show graph customization options',
                 id='show_customization_options',
             ),
+
             html.Button(
                 children='Hide graph customization options',
                 id='hide_customization_options',
                 style=dict(display='none'),
             ),
+
             html.Button(
                 children='Show export options',
                 id='show_export_options',
             ),
+
             html.Button(
                 children='Hide export options',
                 id='hide_export_options',
                 style=dict(display='none'),
             ),
+
             dcc.Store(
                 id='selection',
             ),
+
             dcc.Input(
                 id='font_selection_input',
                 placeholder='Set font',
@@ -174,6 +199,7 @@ class Dash_App:
                 debounce=True,
                 style=dict(display='none'),
             ),
+
             dcc.Input(
                 id='font_size_input',
                 placeholder='Set font size',
@@ -184,6 +210,7 @@ class Dash_App:
                 debounce=True,
                 style=dict(display='none'),
             ),
+
             dcc.Input(
                 id='graph_width_input',
                 placeholder='Set graph width',
@@ -193,6 +220,7 @@ class Dash_App:
                 step=1,
                 style=dict(display='none'),
             ),
+
             dcc.Input(
                 id='graph_height_input',
                 placeholder='Set graph height',
@@ -202,6 +230,7 @@ class Dash_App:
                 step=1,
                 style=dict(display='none'),
             ),
+
             dcc.Input(
                 id='plot_name_input',
                 placeholder='Set plot name',
@@ -210,6 +239,7 @@ class Dash_App:
                 debounce=True,
                 style=dict(display='none'),
             ),
+
             dcc.Dropdown(
                 id='background_color_dropdown',
                 options=[
@@ -221,6 +251,7 @@ class Dash_App:
                 placeholder='Set background color',
                 style=dict(display='none'),
             ),
+
             dcc.Dropdown(
                 id='image_export_format_dropdown',
                 options=[
@@ -235,10 +266,12 @@ class Dash_App:
                 placeholder='Set image export format',
                 style=dict(display='none'),
             ),
+
             dcc.Store(
                 id='image_export_format_store',
                 storage_type='local',
             ),
+
             dcc.Dropdown(
                 id='data_export_format_dropdown',
                 options=[
@@ -248,136 +281,136 @@ class Dash_App:
                 placeholder='Set data export format',
                 style=dict(display='none'),
             ),
+
             dcc.Store(
                 id='data_export_format_store',
                 storage_type='local',
             )
-        ])
+        ]
+        )
 
-    # ! CALLBACKS
+        # ! CALLBACKS
 
         # * show customization options
         @app.callback(
             Output(
                 component_id='show_customization_options',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='hide_customization_options',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='font_selection_input',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='font_size_input',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='graph_width_input',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='graph_height_input',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='plot_name_input',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='background_color_dropdown',
-                component_property='style',),
+                component_property='style', ),
             Input(
                 component_id='show_customization_options',
-                component_property='n_clicks',),
+                component_property='n_clicks', ),
             Input(
                 component_id='hide_customization_options',
-                component_property='n_clicks',),
+                component_property='n_clicks', ),
             prevent_initial_call=True
         )
         def update_customization_components(
-            s_clicks,
-            h_clicks,
+                s_clicks,
+                h_clicks,
         ):
             """ Documentation incomplete. """
 
             triggered_id = callback_context.triggered[0]['prop_id']
+            logging.info("'%s' triggered", triggered_id)
             if triggered_id == 'show_customization_options.n_clicks':
-                logging.info("'show_customization_options.n_clicks' triggered")
                 return self.evaluate_customization_options('show', s_clicks)
             elif triggered_id == 'hide_customization_options.n_clicks':
-                logging.info("'hide_customization_options.n_clicks' triggered")
                 return self.evaluate_customization_options('hide', h_clicks)
 
         # * show export options
         @app.callback(
             Output(
                 component_id='show_export_options',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='hide_export_options',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='image_export_format_dropdown',
-                component_property='style',),
+                component_property='style', ),
             Output(
                 component_id='data_export_format_dropdown',
-                component_property='style',),
+                component_property='style', ),
             Input(
                 component_id='show_export_options',
-                component_property='n_clicks',),
+                component_property='n_clicks', ),
             Input(
                 component_id='hide_export_options',
-                component_property='n_clicks',),
+                component_property='n_clicks', ),
             prevent_initial_call=True
         )
         def update_export_components(
-            s_clicks,
-            h_clicks,
+                s_clicks,
+                h_clicks,
         ):
             """ Documentation incomplete. """
 
             triggered_id = callback_context.triggered[0]['prop_id']
+            logging.info("'%s' triggered", triggered_id)
             if triggered_id == 'show_export_options.n_clicks':
-                logging.info("'show_export_options.n_clicks' triggered")
                 return self.evaluate_export_options('show', s_clicks)
             elif triggered_id == 'hide_export_options.n_clicks':
-                logging.info("'hide_export_options.n_clicks' triggered")
                 return self.evaluate_export_options('hide', h_clicks)
 
         # * regenerate or update graph
-        # TODO whenever possible, update instead of regenerating
+        # whenever possible we update instead of regenerating
         @app.callback(
             Output(
                 component_id='parmoo_graph',
-                component_property='figure',),
+                component_property='figure', ),
             # height - update
             Input(
                 component_id='graph_height_input',
-                component_property='value',),
+                component_property='value', ),
             # width - update
             Input(
                 component_id='graph_width_input',
-                component_property='value',),
+                component_property='value', ),
             # font - update
             Input(
                 component_id='font_selection_input',
-                component_property='value',),
+                component_property='value', ),
             # font size - update
             Input(
                 component_id='font_size_input',
-                component_property='value',),
+                component_property='value', ),
             # background color - update
             Input(
                 component_id='background_color_dropdown',
-                component_property='value',),
+                component_property='value', ),
             # plot name - update
             Input(
                 component_id='plot_name_input',
-                component_property='value',),
+                component_property='value', ),
             # plot type - regenerate
             Input(
                 component_id='plot_type_dropdown',
-                component_property='value',),
+                component_property='value', ),
             # database - regenerate
             Input(
                 component_id='database_dropdown',
-                component_property='value',),
+                component_property='value', ),
             # constraint showr - regenerate
             Input(
                 component_id='constraint_checkboxes',
@@ -385,45 +418,37 @@ class Dash_App:
             prevent_initial_call=True
         )
         def update_graph(
-            height_value,
-            width_value,
-            font_value,
-            font_size_value,
-            background_color_value,
-            plot_name_value,
-            plot_type_value,
-            database_value,
-            constraint_showr_value,
+                height_value,
+                width_value,
+                font_value,
+                font_size_value,
+                background_color_value,
+                plot_name_value,
+                plot_type_value,
+                database_value,
+                constraint_showr_value,
         ):
             """ Documentation incomplete. """
 
             triggered_id = callback_context.triggered[0]['prop_id']
+            logging.info("'%s' triggered", triggered_id)
             if 'graph_height_input.value' == triggered_id:
-                logging.info("'graph_height_input.value' triggered")
                 return self.evaluate_height(height_value)
             elif 'graph_width_input.value' == triggered_id:
-                logging.info("'graph_width_input.value' triggered")
                 return self.evaluate_width(width_value)
             elif 'font_selection_input.value' == triggered_id:
-                logging.info("'font_selection_input.value' triggered")
                 return self.evaluate_font(font_value)
             elif 'font_size_input.value' == triggered_id:
-                logging.info("'font_size_input.value' triggered")
                 return self.evaluate_font_size(font_size_value)
             elif 'background_color_dropdown.value' == triggered_id:
-                logging.info("'background_color_dropdown.value' triggered")
                 return self.evaluate_background_color(background_color_value)
             elif 'plot_name_input.value' == triggered_id:
-                logging.info("'plot_name_input.value' triggered")
                 return self.evaluate_plot_name(plot_name_value)
             elif 'plot_type_dropdown.value' == triggered_id:
-                logging.info("'plot_type_dropdown.value' triggered")
                 return self.evaluate_plot_type(plot_type_value)
             elif 'database_dropdown.value' == triggered_id:
-                logging.info("'database_dropdown.value' triggered")
                 return self.evaluate_database(database_value)
             elif 'constraint_checkboxes.value' == triggered_id:
-                logging.info("'constraint_checkboxes.value' triggered")
                 return self.evaluate_constraint_showr(constraint_showr_value)
 
         # * download dataset
@@ -454,19 +479,18 @@ class Dash_App:
                 component_property='restyleData'),
         )
         def store_selection(
-            selectedData,
-            restyleData,
+                selected_data,
+                restyle_data,
         ):
             """ Documentation incomplete. """
 
             triggered_id = callback_context.triggered[0]['prop_id']
+            logging.info("'%s' triggered", triggered_id)
             if 'parmoo_graph.selectedData' == triggered_id:
-                logging.info("'parmoo_graph.selectedData' triggered")
-                self.evaluate_selected_data(selectedData, 'selectedData')
+                self.evaluate_selected_data(selected_data, 'selectedData')
             elif 'parmoo_graph.restyleData' == triggered_id:
-                logging.info("'parmoo_graph.restyleData' triggered")
                 if self.plot_type == 'parallel':
-                    self.evaluate_selected_data(restyleData, 'restyleData')
+                    self.evaluate_selected_data(restyle_data, 'restyleData')
 
         # * download selection
         @app.callback(
@@ -528,54 +552,39 @@ class Dash_App:
             logging.info("'download_image_button.n_clicks' triggered")
             return self.evaluate_image_download(n_clicks)
 
-    # ! EXECUTION
+        # ! EXECUTION
 
         logging.info('initialized dashboard')
 
         # * pop_up
-        if pop_up:
-            if not environ.get("WERKZEUG_RUN_MAIN"):
-                open_new(port)
+        if pop_up and not environ.get("WERKZEUG_RUN_MAIN"):
+            open_new(port)
 
         # * run application
         logging.info('opening dashboard in browser. this might take a while')
-        if dev_mode:
-            app.run(
-                debug=True,
-                dev_tools_hot_reload=True,
-            )
-        elif not dev_mode:
-            app.run(
-                debug=False,
-                dev_tools_hot_reload=False,
-            )
+        assert isinstance(dev_mode, bool)
+        app.run(
+            debug=dev_mode,
+            dev_tools_hot_reload=dev_mode,
+        )
 
     # ! INITIALIZATION HELPERS
 
     def generate_graph(self):
         """ Documentation incomplete. """
 
-        if self.plot_type == 'scatter':
-            self.graph = generate_scatter(
-                moop=self.moop,
-                db=self.db,
-                points=self.points,
-            )
-        elif self.plot_type == 'parallel':
-            self.graph = generate_parallel(
-                moop=self.moop,
-                db=self.db,
-                points=self.points,
-            )
-        elif self.plot_type == 'radar':
-            self.graph = generate_radar(
-                moop=self.moop,
-                db=self.db,
-                points=self.points,
-            )
-        else:
-            warn("invalid plot_type")
+        # validate input
+        validate_input(valid_plot_type_input, self.plot_type, "plot_type")
 
+        # generate new graph
+        if self.plot_type == 'scatter':
+            self.graph = generate_scatter(self.moop, self.db, self.points)
+        elif self.plot_type == 'parallel':
+            self.graph = generate_parallel(self.moop, self.db, self.points)
+        elif self.plot_type == 'radar':
+            self.graph = generate_radar(self.moop, self.db, self.points)
+
+        # update graph to use custom formatting
         self.graph = self.update_height()
         self.graph = self.update_width()
         self.graph = self.update_font()
@@ -588,7 +597,19 @@ class Dash_App:
     def configure(self):
         """ Documentation incomplete. """
 
-        if self.height != 'auto' and self.width != 'auto':
+        # automatic config
+        if self.height == 'auto' or self.width == 'auto':
+            self.config = {
+                'displaylogo': False,
+                'displayModeBar': True,
+                'toImageButtonOptions': {
+                    'format': self.screenshot,
+                    'filename': str(self.plot_name),
+                }
+            }
+
+        # custom config
+        else:
             self.config = {
                 'displaylogo': False,
                 'displayModeBar': True,
@@ -600,15 +621,6 @@ class Dash_App:
                     'scale': 1
                 }
             }
-        else:
-            self.config = {
-                'displaylogo': False,
-                'displayModeBar': True,
-                'toImageButtonOptions': {
-                    'format': self.screenshot,
-                    'filename': str(self.plot_name),
-                }
-            }
 
         return self.config
 
@@ -618,74 +630,72 @@ class Dash_App:
     def update_height(self):
         """ Documentation incomplete. """
 
-        if self.height != 'auto':
-            self.graph.update_layout(
-                height=int(self.height))
+        if self.height == 'auto':
+            return self.graph
+
+        self.graph.update_layout(height=int(self.height))
         return self.graph
 
     # * functionality of select width input
     def update_width(self):
         """ Documentation incomplete. """
 
-        if self.width != 'auto':
-            self.graph.update_layout(
-                width=int(self.width))
+        if self.width == 'auto':
+            return self.graph
+
+        self.graph.update_layout(width=int(self.width))
         return self.graph
 
     # * functionality of select font input
     def update_font(self):
         """ Documentation incomplete. """
 
-        if self.font != 'auto':
-            self.graph.update_layout(
-                font=dict(
-                    family=self.font
-                )
-            )
+        if self.font == 'auto':
+            return self.graph
+
+        self.graph.update_layout(font=dict(family=self.font))
         return self.graph
 
     # * functionality of select font size input
     def update_font_size(self):
         """ Documentation incomplete. """
 
-        if self.fontsize != 'auto':
-            self.graph.update_layout(
-                font=dict(
-                    size=int(self.fontsize)
-                )
-            )
+        if self.fontsize == 'auto':
+            return self.graph
+
+        self.graph.update_layout(font=dict(size=int(self.fontsize)))
         return self.graph
 
     # * functionality of plot name input
     def update_plot_name(self):
         """ Documentation incomplete. """
 
-        self.graph.update_layout(
-            title_text=self.plot_name
-        )
+        self.graph.update_layout(title_text=self.plot_name)
         return self.graph
 
     # * functionality of background color dropdown
     def update_background_color(self):
         """ Documentation incomplete. """
 
-        if self.background_color != 'auto':
-            if self.plot_type == 'scatter':
-                self.graph.update_layout(
-                    plot_bgcolor=self.background_color,
-                    paper_bgcolor=self.background_color,
-                )
-            elif self.plot_type == 'parallel':
-                self.graph.update_layout(
-                    paper_bgcolor=self.background_color,
-                )
-            elif self.plot_type == 'radar':
-                self.graph.update_polars(
-                    bgcolor=self.background_color,
-                )
-                self.graph.update_layout(
-                    paper_bgcolor=self.background_color,
-                )
+        if self.background_color == 'auto':
+            return self.graph
+
+        if self.plot_type == 'scatter':
+            self.graph.update_layout(
+                plot_bgcolor=self.background_color,
+                paper_bgcolor=self.background_color,
+            )
+        elif self.plot_type == 'parallel':
+            self.graph.update_layout(
+                paper_bgcolor=self.background_color,
+            )
+        elif self.plot_type == 'radar':
+            self.graph.update_polars(
+                bgcolor=self.background_color,
+            )
+            self.graph.update_layout(
+                paper_bgcolor=self.background_color,
+            )
         return self.graph
 
     # * functionality of plot type dropdown
@@ -698,15 +708,11 @@ class Dash_App:
     def update_database(self):
         """ Documentation incomplete. """
 
-        self.database = set_database(
-            moop=self.moop,
-            db=self.db,
-            points=self.points
-        )
-        if self.plot_name == 'Pareto Front':
-            self.plot_name = set_plot_name(db=self.db)
-        elif self.plot_name == 'Objective Data':
-            self.plot_name = set_plot_name(db=self.db)
+        self.database = set_database(self.moop, self.db, self.points)
+
+        if self.plot_name in default_plot_names:
+            self.plot_name = set_plot_name(self.db)
+
         return self.generate_graph()
 
     # ! CALLBACK HELPERS
@@ -714,30 +720,30 @@ class Dash_App:
     def evaluate_height(self, height_value):
         """ Documentation incomplete. """
 
-        if height_value is not None:
-            self.height = height_value
-            return self.update_height()
-        else:
+        if height_value is None:
             return self.graph
+
+        self.height = height_value
+        return self.update_height()
 
     def evaluate_width(self, width_value):
         """ Documentation incomplete. """
 
-        if width_value is not None:
-            self.width = width_value
-            return self.update_width()
-        else:
+        if width_value is None:
             return self.graph
+
+        self.width = width_value
+        return self.update_width()
 
     def evaluate_font(self, font_value):
         """ Documentation incomplete. """
 
-        if font_value != '':
-            self.font = font_value
-            self.graph = self.update_font()
+        if font_value == '':
             return self.graph
-        else:
-            return self.graph
+
+        self.font = font_value
+        self.graph = self.update_font()
+        return self.graph
 
     def evaluate_font_size(self, font_size_value):
         """ Documentation incomplete. """
@@ -749,7 +755,7 @@ class Dash_App:
     def evaluate_background_color(self, background_color_value):
         """ Documentation incomplete. """
 
-        if background_color_value == 'Transparent':
+        if background_color_value.lower() == 'transparent':
             self.background_color = 'rgb(0,0,0,0)'
         else:
             self.background_color = background_color_value
@@ -758,31 +764,36 @@ class Dash_App:
     def evaluate_plot_name(self, plot_name_value):
         """ Documentation incomplete. """
 
-        if plot_name_value != '':
-            self.plot_name = plot_name_value
-            self.graph = self.update_plot_name()
+        if plot_name_value == '':
             return self.graph
-        else:
-            return self.graph
+
+        self.plot_name = plot_name_value
+        self.graph = self.update_plot_name()
+        return self.graph
 
     def evaluate_plot_type(self, plot_type_value):
         """ Documentation incomplete. """
 
-        if plot_type_value == 'Scatterplot':
-            self.plot_type = 'scatter'
-        elif plot_type_value == 'Parallel Coordinates plot':
-            self.plot_type = 'parallel'
-        elif plot_type_value == 'Radar plot':
-            self.plot_type = 'radar'
+        outer_inner_plot_types = {
+            'Scatterplot': 'scatter',
+            'Parallel Coordinates plot': 'parallel',
+            'Radar plot': 'radar'
+        }
+
+        self.plot_type = outer_inner_plot_types[plot_type_value]
+
         return self.update_plot_type()
 
     def evaluate_database(self, database_value):
         """ Documentation incomplete. """
 
-        if database_value == 'Pareto Front':
-            self.db = 'pf'
-        elif database_value == 'Objective Data':
-            self.db = 'obj'
+        outer_inner_db_types = {
+            'Pareto Front': 'pf',
+            'Objective Data': 'obj'
+        }
+
+        self.db = outer_inner_db_types[database_value]
+
         return self.update_database()
 
     def evaluate_dataset_download(self, n_clicks):
@@ -792,12 +803,12 @@ class Dash_App:
             raise exceptions.PreventUpdate
         else:
             self.database.index.name = 'index'
-            if self.data_export_format == 'CSV':
+            if self.data_export_format.lower() == 'csv':
                 return dict(
                     filename=str(self.plot_name) + ".csv",
                     content=self.database.to_csv(),
                 )
-            else:
+            elif self.data_export_format.lower() == 'json':
                 return dict(
                     filename=str(self.plot_name) + ".json",
                     content=self.database.to_json(),
@@ -808,71 +819,67 @@ class Dash_App:
 
         if data is None:
             raise exceptions.PreventUpdate
-        else:
-            self.selection_indexes = []
-            if type == 'selectedData':
-                selectedData = data
-                pointskey = selectedData['points']
-                for index in range(len(pointskey)):
-                    level1 = pointskey[index]
-                    point_index = level1['pointIndex']
-                    self.selection_indexes.append(point_index)
-            elif type == 'restyleData':
-                self.update_constraint_range(data)
-                objectives = self.moop.getObjectiveType().names
-                for i, row in self.database.iterrows():
-                    row_selected = True
-                    for objective in objectives:
-                        if row_selected:
-                            row_obj_value = row[objective]
-                            location = objectives.index(objective)
-                            entry_dict = self.constraint_range[location]
-                            ranges = entry_dict[list(entry_dict.keys())[0]]
-                            if ranges is not None:
-                                if row_selected:
-                                    for range in ranges:
-                                        try:
-                                            for rang in range:
-                                                for ran in rang:
-                                                    pass
-                                            row_selected_yet = False
-                                            for rang in range:
-                                                if not row_selected_yet:
-                                                    if (row_obj_value >=
-                                                       rang[0] and
-                                                       row_obj_value <=
-                                                       rang[1]):
-                                                        row_selected_yet = True
-                                                    else:
-                                                        row_selected_yet =False
-                                            row_selected = row_selected_yet
-                                        except:
-                                            if (row_obj_value >= range[0] and
-                                               row_obj_value <= range[1]):
-                                                row_selected = True
-                                            else:
-                                                row_selected = False
-                    if row_selected:
-                        self.selection_indexes.append(i)
 
-    def set_constraint_range(self, restyleData):
-        """ Documentation incomplete. """
-
-        if restyleData is None:
+        self.selection_indexes = []
+        if type == 'selectedData':
+            selected_data = data
+            points_key = selected_data['points']
+            for index in range(len(points_key)):
+                level1 = points_key[index]
+                point_index = level1['pointIndex']
+                self.selection_indexes.append(point_index)
+        elif type == 'restyleData':
+            self.update_constraint_range(data)
             objectives = self.moop.getObjectiveType().names
-            self.constraint_range = [None] * len(objectives)
-            count = 0
-            for objective in objectives:
-                self.constraint_range[count] = dict({objective: None})
-                count += 1
-            return self.constraint_range
-        else:
-            return self.update_constraint_range(self, restyleData)
+            for i, row in self.database.iterrows():
+                row_selected = True
+                for objective in objectives:
+                    if row_selected:
+                        row_obj_value = row[objective]
+                        location = objectives.index(objective)
+                        entry_dict = self.constraint_range[location]
+                        ranges = entry_dict[list(entry_dict.keys())[0]]
+                        if ranges is not None:
+                            if row_selected:
+                                for range in ranges:
+                                    try:
+                                        for rang in range:
+                                            for ran in rang:
+                                                pass
+                                        row_selected_yet = False
+                                        for rang in range:
+                                            if not row_selected_yet:
+                                                if rang[0] <= row_obj_value <= rang[1]:
+                                                    row_selected_yet = True
+                                                else:
+                                                    row_selected_yet = False
+                                        row_selected = row_selected_yet
+                                    except:
+                                        if range[0] <= row_obj_value <= range[1]:
+                                            row_selected = True
+                                        else:
+                                            row_selected = False
+                if row_selected:
+                    self.selection_indexes.append(i)
 
-    def update_constraint_range(self, restyleData):
+    def set_constraint_range(self, restyle_data):
         """ Documentation incomplete. """
 
-        key_list = restyleData[0]
+        if restyle_data is not None:
+            return self.update_constraint_range(self, restyle_data)
+
+        objectives = self.moop.getObjectiveType().names
+        self.constraint_range = [None] * len(objectives)
+        count = 0
+        for objective in objectives:
+            self.constraint_range[count] = dict({objective: None})
+            count += 1
+        return self.constraint_range
+
+    def update_constraint_range(self, restyle_data):
+        """ Documentation incomplete. """
+
+        key_list = restyle_data[0]
         for key in key_list:
             location = int(key[11])
             entry_dict = self.constraint_range[location]
@@ -887,23 +894,21 @@ class Dash_App:
         else:
             selection_db = self.database.iloc[:0, :].copy()
             for i in self.selection_indexes:
-                selection_db = pd.concat(
-                    [selection_db,
-                        self.database.iloc[[i]]]
-                )
+                selection_db = pd.concat([
+                    selection_db,
+                    self.database.iloc[[i]]
+                ])
                 selection_db.index.name = 'index'
             selection_db.drop_duplicates(inplace=True)
             selection_db.sort_index(inplace=True)
-            if self.data_export_format == 'CSV':
-                return dict(
-                    filename="selected_data.csv",
-                    content=selection_db.to_csv(),
-                )
-            else:
-                return dict(
-                    filename="selected_data.json",
-                    content=selection_db.to_json(),
-                )
+            if self.data_export_format.lower() == 'csv':
+                file_content = selection_db.to_csv()
+            elif self.data_export_format.lower() == 'json':
+                file_content = selection_db.to_json()
+            return {
+                'filename': f'selected_data.{self.data_export_format.lower()}',
+                'content': file_content
+            }
 
     def evaluate_image_export_format(self, image_export_format_value):
         """ Documentation incomplete. """
@@ -922,25 +927,14 @@ class Dash_App:
 
         if n_clicks is None:
             raise exceptions.PreventUpdate
-        else:
-            file_name = str(self.plot_name)
-            file_name += '.' + str(self.image_export_format)
-            if (str(self.image_export_format) == 'HTML' or
-               str(self.image_export_format) == 'html'):
-                con_tent = pio.write_html(
-                        fig=self.graph,
-                        file=str(file_name)
-                )
-            else:
-                con_tent = pio.write_image(
-                        fig=self.graph,
-                        file=str(file_name)
-                )
 
-            return dict(
-                filename=file_name,
-                content=con_tent,
-            )
+        else:
+            file_name = f'{self.plot_name}.{self.image_export_format}'
+            if self.image_export_format.lower() == 'html':
+                con_tent = pio.write_html(self.graph, str(file_name))
+            else:
+                con_tent = pio.write_image(self.graph, str(file_name))
+            return {'filename': file_name, 'content': con_tent}
 
     def evaluate_customization_options(self, action, n_clicks):
         """ Documentation incomplete. """
@@ -948,8 +942,8 @@ class Dash_App:
         if n_clicks is None:
             raise exceptions.PreventUpdate
         else:
-            showr = dict()
-            hider = dict(display='none')
+            showr = {}
+            hider = {'display': 'none'}
             if action == 'show':
                 return hider, showr, showr, showr, showr, showr, showr, showr
             else:
@@ -960,13 +954,13 @@ class Dash_App:
 
         if n_clicks is None:
             return no_update, no_update
+
+        showr = {}
+        hider = {'display': 'none'}
+        if action == 'show':
+            return hider, showr, showr, showr
         else:
-            showr = dict()
-            hider = dict(display='none')
-            if action == 'show':
-                return hider, showr, showr, showr
-            else:
-                return showr, hider, hider, hider
+            return showr, hider, hider, hider
 
     def evaluate_constraint_showr(self, value):
         """ Documentation incomplete. """
@@ -995,20 +989,16 @@ class Dash_App:
 
         if value is None:
             raise exceptions.PreventUpdate
+
         else:
-            if value == ['constraint_satisfying']:
+            if 'constraint_satisfying' in value and 'constraint_violating' in value:
+                self.points = 'all'
+            elif 'constraint_satisfying' in value:
                 self.points = 'constraint_satisfying'
-            elif value == ['constraint_violating']:
+            elif 'constraint_violating' in value:
                 self.points = 'constraint_violating'
-            elif value == ['constraint_satisfying', 'constraint_violating']:
-                self.points = 'all'
-            elif value == ['constraint_violating', 'constraint_satisfying']:
-                self.points = 'all'
             else:
                 self.points = 'none'
-        self.database = set_database(
-            moop=self.moop,
-            db=self.db,
-            points=self.points,
-        )
+
+        self.database = set_database(self.moop, self.db, self.points,)
         return self.generate_graph()

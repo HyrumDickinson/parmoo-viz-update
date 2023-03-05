@@ -11,15 +11,15 @@ first argument:
 
 Please take note of the following:
 
- * Via the interactivity features, all of the arguments except for the
+ * Via the interactivity features, all the arguments except for the
    ``moop`` field can be adjusted interactively through the pop-up GUI.
    The plot type can also be adjusted from the dropdown menu while running
-   the GUI..
+   the GUI.
  * The viz tool hosts a Dash app through the local port
    ``http://127.0.0.1:8050/``.
    This means that only one visualization can be hosted at a time.
    Also, killing the Dash app will end the interactivity in the browser,
-   although a static plot may remain in your broswer window.
+   although a static plot may remain in your browser window.
  * Finally, note that there is a known issue when using the Chrome browser.
    The Firefox or Safari browsers are recommended.
 
@@ -38,7 +38,7 @@ To interact with the plots:
     selection bar you wish to delete.
  5. To reset plot interactions made through the toolbar in the top right of a
     graph (not interactions made through buttons, dropdowns, toggles, or input
-    boxes), double click on the plot. This will undo selections, zoom, pan,
+    boxes), double-click on the plot. This will undo selections, zoom, pan,
     etc.
 
 The three basic plot options are detailed below.
@@ -61,22 +61,23 @@ from .graph import (
 )
 
 
-def scatter(moop,
-            db='pf',
-            output='dash',
-            points='constraint_satisfying',
-            height='auto',
-            width='auto',
-            font='auto',
-            fontsize='auto',
-            background_color='auto',
-            screenshot='svg',
-            image_export_format='svg',
-            data_export_format='csv',
-            dev_mode=False,
-            pop_up=True,
-            port='http://127.0.0.1:8050/',
-           ):
+def scatter(
+    moop,
+    db='pf',
+    output='dash',
+    points='constraint_satisfying',
+    height='auto',
+    width='auto',
+    font='auto',
+    fontsize='auto',
+    background_color='auto',
+    screenshot='svg',
+    image_export_format='svg',
+    data_export_format='csv',
+    dev_mode=False,
+    pop_up=True,
+    port='http://127.0.0.1:8050/',
+):
     """ Create a scatter plot matrix to visualize the results of a MOOP.
 
     Args:
@@ -200,22 +201,23 @@ def scatter(moop,
         )
 
 
-def parallel_coordinates(moop,
-                         db='pf',
-                         output='dash',
-                         points='constraint_satisfying',
-                         height='auto',
-                         width='auto',
-                         font='auto',
-                         fontsize='auto',
-                         background_color='auto',
-                         screenshot='svg',
-                         image_export_format='svg',
-                         data_export_format='csv',
-                         dev_mode=False,
-                         pop_up=True,
-                         port='http://127.0.0.1:8050/',
-                        ):
+def parallel_coordinates(
+    moop,
+    db='pf',
+    output='dash',
+    points='constraint_satisfying',
+    height='auto',
+    width='auto',
+    font='auto',
+    fontsize='auto',
+    background_color='auto',
+    screenshot='svg',
+    image_export_format='svg',
+    data_export_format='csv',
+    dev_mode=False,
+    pop_up=True,
+    port='http://127.0.0.1:8050/',
+):
     """ Create a parallel coordinates plot to visualize the results of a MOOP.
 
     Args:
@@ -339,22 +341,22 @@ def parallel_coordinates(moop,
 
 
 def radar(
-          moop,
-          db='pf',
-          output='dash',
-          points='constraint_satisfying',
-          height='auto',
-          width='auto',
-          font='auto',
-          fontsize='auto',
-          background_color='auto',
-          screenshot='svg',
-          image_export_format='svg',
-          data_export_format='csv',
-          dev_mode=False,
-          pop_up=True,
-          port='http://127.0.0.1:8050/',
-         ):
+    moop,
+    db='pf',
+    output='dash',
+    points='constraint_satisfying',
+    height='auto',
+    width='auto',
+    font='auto',
+    fontsize='auto',
+    background_color='auto',
+    screenshot='svg',
+    image_export_format='svg',
+    data_export_format='csv',
+    dev_mode=False,
+    pop_up=True,
+    port='http://127.0.0.1:8050/',
+):
     """ Create a radar plot to visualize the results of a MOOP.
 
     Args:

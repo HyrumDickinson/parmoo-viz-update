@@ -1,0 +1,9 @@
+valid_db_input = ('pf', 'obj')
+valid_output_input = ('dash', 'html', 'pdf', 'svg', 'eps', 'jpeg', 'png', 'webp')
+valid_points_input = ('constraint_satisfying', 'constraint_violating', 'none', 'all')
+valid_file_type_input = ('html', 'pdf', 'svg', 'eps', 'jpeg', 'png', 'webp')
+valid_screenshot_input = ('png', 'svg', 'jpeg', 'webp')
+valid_image_export_format_input = valid_file_type_input
+valid_data_export_format_input = ('json', 'csv')
+valid_plot_type_input = ('scatter', 'radar', 'parallel')
+default_plot_names = ('Pareto Front', 'Objective Data')

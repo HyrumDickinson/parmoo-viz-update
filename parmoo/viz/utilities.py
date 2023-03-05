@@ -5,9 +5,18 @@ the viz tool.
 
 import pandas as pd
 import logging
+from .statics import (
+    valid_db_input,
+    valid_output_input,
+    valid_points_input,
+    valid_file_type_input,
+    valid_screenshot_input,
+    valid_image_export_format_input,
+    valid_data_export_format_input,
+)
+
 
 def export_file(fig, plot_name, file_type):
-
     """ Export image of figure to working directory.
 
         Args:
@@ -27,31 +36,19 @@ def export_file(fig, plot_name, file_type):
 
     """
 
+    # validate input
+    validate_input(valid_file_type_input, file_type, "file_type")
+
+    # export graph to file
     if file_type == 'html':
         fig.write_html(plot_name + ".html")
         logging.info("exported graph as .html")
-    elif file_type == 'pdf':
-        fig.write_image(plot_name + ".pdf")
-        logging.info("exported graph as .pdf")
-    elif file_type == 'svg':
-        fig.write_image(plot_name + ".svg")
-        logging.info("exported graph as .svg")
-    elif file_type == 'eps':
-        fig.write_image(plot_name + ".eps")
-        logging.info("exported graph as .eps")
-    elif file_type == 'jpeg':
-        fig.write_image(plot_name + ".jpeg")
-        logging.info("exported graph as .jpeg")
-    elif file_type == 'png':
-        fig.write_image(plot_name + ".png")
-        logging.info("exported graph as .png")
-    elif file_type == 'webp':
-        fig.write_image(plot_name + ".webp")
-        logging.info("exported graph as .webp")
+    else:
+        fig.write_image(f"{plot_name}.{file_type}")
+        logging.info("exported graph as .%s", file_type)
 
 
 def set_plot_name(db):
-
     """ Provide a default graph title.
 
         Args:
@@ -64,6 +61,10 @@ def set_plot_name(db):
 
     """
 
+    # validate input
+    validate_input(valid_db_input, db, "db")
+
+    # set plot name
     if db == 'pf':
         plot_name = "Pareto Front"
     elif db == 'obj':
@@ -72,7 +73,6 @@ def set_plot_name(db):
 
 
 def set_database(moop, db, points):
-
     """ Choose which points from MOOP object to plot.
 
         Args:
@@ -94,36 +94,37 @@ def set_database(moop, db, points):
 
     """
 
+    # validate input
+    validate_input(valid_db_input, db, "db")
+    validate_input(valid_points_input, points, "points")
+
+    # select database
     if db == 'pf':
         database = pd.DataFrame(moop.getPF())
     elif db == 'obj':
         database = pd.DataFrame(moop.getObjectiveData())
+
+    # choose points from database
     if moop.getConstraintType() is None:
-        df = database
-    else:
+        return database
+    if points == 'all':
+        return database
+    if points == 'none':
+        return database[0:0]
+
+    constraints = moop.getConstraintType().names
+    df = database.copy(deep=True)
+    for constraint in constraints:
         if points == 'constraint_satisfying':
-            constraints = moop.getConstraintType().names
-            df = database.copy(deep=True)
-            for constraint in constraints:
-                indices = df[df[constraint] > 0].index
-                df.drop(indices, inplace=True)
-                df.reset_index(inplace=True)
+            indices = df[df[constraint] > 0].index
         elif points == 'constraint_violating':
-            constraints = moop.getConstraintType().names
-            df = database.copy(deep=True)
-            for constraint in constraints:
-                indices = df[df[constraint] <= 0].index
-                df.drop(indices, inplace=True)
-                df.reset_index(inplace=True)
-        elif points == 'all':
-            df = database
-        elif points == 'none':
-            df = database[0:0]
+            indices = df[df[constraint] <= 0].index
+        df.drop(indices, inplace=True)
+        df.reset_index(inplace=True)
     return df
 
 
 def set_hover_info(database, i):
-
     """ Customize information in hover label for trace i.
 
         Args:
@@ -138,35 +139,38 @@ def set_hover_info(database, i):
             users hover over trace i.
 
     """
+    # since plotly is JavaScript-based it uses HTML string formatting
+    return "<br>".join([f"{key}: {database[key][i]}" for key in database.columns])
 
-    hover_info = ""
-    for key in database.columns:
-        hover_info += str(key)
-        hover_info += ": "
-        hover_info += str(database[key][i])
-        hover_info += "<br>"
-        # since plotly is JavaScript-based
-        # it uses HTML string formatting
-    return hover_info
+
+def validate_input(
+        valid_inputs: set,
+        actual_input,
+        parameter_name: str = "input",
+):
+    if actual_input not in valid_inputs:
+        raise ValueError(
+            f"Unsupported parameter value for {parameter_name}: {actual_input}. "
+            f"{parameter_name} must be one of {valid_inputs}"
+        )
 
 
 def check_inputs(
-    db,
-    output,
-    points,
-    height,
-    width,
-    font,
-    fontsize,
-    background_color,
-    screenshot,
-    image_export_format,
-    data_export_format,
-    dev_mode,
-    pop_up,
-    port,
+        db,
+        output,
+        points,
+        height,
+        width,
+        font,
+        fontsize,
+        background_color,
+        screenshot,
+        image_export_format,
+        data_export_format,
+        dev_mode,
+        pop_up,
+        port,
 ):
-
     """ Check keyword inputs to user-facing functions for validity
 
         Args:
@@ -182,7 +186,7 @@ def check_inputs(
             points: The item passed to the 'points' keyword in a
                 user-facing function.
                 If points cannot be cast to a string corresponding to one of
-                the supported contraint filters, a ValueError is raised.
+                the supported constraint filters, a ValueError is raised.
 
             height: The item passed to the 'height' keyword in a user-facing
                 function.
@@ -254,162 +258,34 @@ def check_inputs(
             A ValueError if any of the values passed by a user to a keyword in
             a user-facing function are judged invalid.
 
+    TODO update this documentation
+
     """
 
-    try:
-        if (str(db) == 'pf' or
-            str(db) == 'obj'):
-            pass
-        else:
-            raise ValueError(str(db) + " is an invalid value for 'db'")
-    except:
-        raise ValueError(str(db) + " is an invalid value for 'db'")
+    validate_input(valid_db_input, db, "db")
 
-    try:
-        if (str(output) == 'dash' or
-            str(output) == 'html' or
-            str(output) == 'svg' or
-            str(output) == 'pdf' or
-            str(output) == 'eps' or
-            str(output) == 'jpeg' or
-            str(output) == 'png' or
-            str(output) == 'webp'):
-            pass
-        else:
-            raise ValueError(str(output) + " is an invalid value for 'output'")
-    except:
-        raise ValueError(str(output) + " is an invalid value for 'output'")
+    validate_input(valid_output_input, output, "output")
 
-    try:
-        if (str(points) == 'constraint_satisfying' or
-            str(points) == 'constraint_violating' or
-            str(points) == 'all' or
-            str(points) == 'none'):
-            pass
-        else:
-            raise ValueError(str(points) + " is an invalid value for 'points'")
-    except:
-        raise ValueError(str(points) + " is an invalid value for 'points'")
+    validate_input(valid_points_input, points, "points")
 
-    if (height == 'auto' or
-        int(height) >= 1):
-        pass
-    else:
-        raise ValueError(str(height) + " is an invalid value for 'height'")
+    assert (height == 'auto') or (isinstance(height, int) and height >= 1)
 
-    try:
-        if (width == 'auto' or
-            int(width) >= 1):
-            pass
-        else:
-            raise ValueError(str(width) + " is an invalid value for 'width'")
-    except:
-        raise ValueError(str(width) + " is an invalid value for 'width'")
+    assert (width == 'auto') or (isinstance(width, int) and width >= 1)
 
-    try:
-        if (str(type(str(font))) == "<class 'str'>"):
-            pass
-        else:
-            raise ValueError(str(font) + " is an invalid value for 'font'")
-    except:
-        raise ValueError(str(font) + " is an invalid value for 'font'")
+    assert isinstance(font, str)
 
-    try:
-        if (fontsize == 'auto' or
-           (int(fontsize) >= 1 and
-            int(fontsize) <= 100)):
-            pass
-        else:
-            message = str(fontsize)
-            message += " is an invalid value for 'fontsize'"
-            raise ValueError(message)
-    except:
-        message = str(fontsize)
-        message += " is an invalid value for 'fontsize'"
-        raise ValueError(message)
+    assert (fontsize == 'auto') or (isinstance(fontsize, int) and 1 <= int(fontsize) <= 100)
 
-    try:
-        if (str(type(str(background_color))) == "<class 'str'>"):
-            pass
-        else:
-            message = str(background_color)
-            message += " is an invalid value for 'background_color'"
-            raise ValueError(message)
-    except:
-        message = str(background_color)
-        message += " is an invalid value for 'background_color'"
-        raise ValueError(message)
+    assert isinstance(background_color, str)
 
-    try:
-        if (screenshot == 'png' or
-            screenshot == 'svg' or
-            screenshot == 'jpeg' or
-            screenshot == 'webp'):
-            pass
-        else:
-            message = str(screenshot)
-            message += " is an invalid value for 'screenshot'"
-            raise ValueError(message)
-    except:
-        message = str(screenshot)
-        message += " is an invalid value for 'screenshot'"
-        raise ValueError(message)
+    validate_input(valid_screenshot_input, screenshot, "screenshot")
 
-    try:
-        if (image_export_format == 'html' or
-            image_export_format == 'svg' or
-            image_export_format == 'pdf' or
-            image_export_format == 'eps' or
-            image_export_format == 'jpeg' or
-            image_export_format == 'png' or
-            image_export_format == 'webp'):
-            pass
-        else:
-            message = str(image_export_format)
-            message += " is an invalid value for 'image_export_format'"
-            raise ValueError(message)
-    except:
-        message = str(image_export_format)
-        message += " is an invalid value for 'image_export_format'"
-        raise ValueError(message)
+    validate_input(valid_image_export_format_input, image_export_format, "image_export_format")
 
-    try:
-        if (data_export_format == 'json' or
-            data_export_format == 'csv'):
-            pass
-        else:
-            message = str(data_export_format)
-            message += " is an invalid value for 'data_export_format'"
-            raise ValueError(message)
-    except:
-        message = str(data_export_format)
-        message += " is an invalid value for 'data_export_format'"
-        raise ValueError(message)
+    validate_input(valid_data_export_format_input, data_export_format, "data_export_format")
 
-    try:
-        if (dev_mode or not dev_mode):
-            pass
-        else:
-            message = str(dev_mode)
-            message += " is an invalid value for 'dev_mode'"
-            raise ValueError(message)
-    except:
-        message = str(dev_mode)
-        message += " is an invalid value for 'dev_mode'"
-        raise ValueError(message)
+    assert isinstance(dev_mode, bool)
 
-    try:
-        if (pop_up or not pop_up):
-            pass
-        else:
-            raise ValueError(str(pop_up) + " is an invalid value for 'pop_up'")
-    except:
-        raise ValueError(str(pop_up) + " is an invalid value for 'pop_up'")
+    assert isinstance(pop_up, bool)
 
-    try:
-        if (port[0:4] == 'http'):
-            pass
-        else:
-            raise ValueError(str(port) + " is an invalid value for 'port'")
-    except:
-        raise ValueError(str(port) + " is an invalid value for 'port'")
+    assert port[0:4] == 'http'
